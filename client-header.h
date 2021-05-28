@@ -26,7 +26,7 @@ public:
 private:
   uint8_t state; 
   uint16_t currentFrame;  
-  uint32_t retransmitRequest[100] = {0};
+  uint32_t retransmitRequest[30] = {0};
 };
 
 

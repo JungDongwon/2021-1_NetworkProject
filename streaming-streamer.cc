@@ -11,6 +11,7 @@
 #include "ns3/double.h"
 #include "ns3/boolean.h"
 
+#include <algorithm>
 #include "client-header.h"
 #include "streaming-streamer.h"
 
@@ -73,6 +74,7 @@ StreamingStreamer::StreamingStreamer ()
   m_sendEvent = EventId ();
 	m_seqNumber = 0;
 	m_pause = false;
+	currentFrame = 0;
 }
 
 StreamingStreamer::~StreamingStreamer()
@@ -163,20 +165,51 @@ StreamingStreamer::SendPacket (void)
 
 	if (!m_pause)
 	{
-		for (uint32_t i=0; i<m_fpacketN; i++)
+		uint32_t count=0;
+		uint32_t retransmit_size = 0;
+		if (retransmit_queue.size()>10){
+			std::unique(retransmit_queue.begin(), retransmit_queue.end());
+			for(uint32_t i=0;i<30;i++)
+			{
+				if (retransmit_queue.empty())
+					break;
+				count++;
+				uint32_t retransmit_packet = retransmit_queue.front();
+				if (retransmit_packet < currentFrame*100)
+				{
+					retransmit_queue.pop_front();
+					continue;
+				}
+				Ptr<Packet> p;
+				p = Create<Packet> (m_size);
+				Address localAddress;
+				m_socket->GetSockName (localAddress);
+				SeqTsHeader seqTs;	
+				seqTs.SetSeq (retransmit_packet);
+				p->AddHeader (seqTs);
+				m_socket->Send (p);
+				retransmit_queue.pop_front();
+			}
+
+			printf("retransmitted %d packets from streamer  \n",count);
+		}
+		if (m_fpacketN - count > 0)
 		{
-			Ptr<Packet> p;
-			p = Create<Packet> (m_size);
+			for (uint32_t i=0; i<m_fpacketN - retransmit_size; i++)
+			{
+				Ptr<Packet> p;
+				p = Create<Packet> (m_size);
 
-			Address localAddress;
-			m_socket->GetSockName (localAddress);
+				Address localAddress;
+				m_socket->GetSockName (localAddress);
 
-			SeqTsHeader seqTs;	
-			seqTs.SetSeq (m_seqNumber++);
-			p->AddHeader (seqTs);
+				SeqTsHeader seqTs;	
+				seqTs.SetSeq (m_seqNumber++);
+				p->AddHeader (seqTs);
 
-			m_socket->Send (p);
-			++m_sent;
+				m_socket->Send (p);
+				++m_sent;
+			}
 		}
 	}
 
@@ -236,7 +269,14 @@ StreamingStreamer::HandleRead (Ptr<Socket> socket)
 			else if (state == 2)  // resume packet
 				m_pause = false;
 			else if (state == 0)  // retransmit request packet
-				printf("state: %d / currentFrame: %d / requests[0] : %d\n",state, currentFrame, requests[0]);
+			{
+				printf("retransmit request received... from %d..(current frame: %d) \n", requests[0], currentFrame);
+				for(uint32_t i=0;i<30;i++){
+					if (requests[i] == 0) 
+						break;	
+					retransmit_queue.push_back(requests[i]);
+				}
+			}
 				
 			
     }

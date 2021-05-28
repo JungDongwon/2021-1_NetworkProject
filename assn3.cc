@@ -17,7 +17,7 @@ main (int argc, char *argv[])
 {
 	srand(time(NULL));
 
-  LogComponentEnable("StreamingStreamerApplication", (LogLevel)(LOG_LEVEL_INFO|LOG_PREFIX_TIME|LOG_PREFIX_NODE));
+    LogComponentEnable("StreamingStreamerApplication", (LogLevel)(LOG_LEVEL_INFO|LOG_PREFIX_TIME|LOG_PREFIX_NODE));
 	LogComponentEnable("StreamingClientApplication", (LogLevel)(LOG_LEVEL_INFO|LOG_PREFIX_TIME|LOG_PREFIX_NODE));
 
 	/*

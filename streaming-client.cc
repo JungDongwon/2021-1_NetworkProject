@@ -13,6 +13,7 @@
 #include "ns3/double.h"
 #include "ns3/boolean.h"
 
+#include <algorithm>
 #include "client-header.h"
 #include "streaming-client.h"
 
@@ -88,6 +89,7 @@ StreamingClient::StreamingClient ()
 	m_seqNumber = 0;
 	m_consumEvent = EventId ();
 	m_genEvent = EventId ();
+	m_requestEvent = EventId();
 	m_frameCnt = 0;
 	m_frameIdx = 0;
 }
@@ -182,6 +184,7 @@ StreamingClient::FrameConsumer (void)
 void 
 StreamingClient::FrameGenerator (void)
 {
+	RequestRetransmit();
 	if (m_frameCnt < (int)m_bufferSize)
 	{
 		std::map<uint32_t,FrameCheck>::iterator iter;
@@ -254,6 +257,7 @@ StreamingClient::StartApplication (void)
 
 	m_socket->SetRecvCallback (MakeCallback (&StreamingClient::HandleRead, this));
 	m_consumEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::FrameConsumer, this);
+	//m_requestEvent = Simulator::Schedule ( Seconds (double(1/20)), &StreamingClient::RequestRetransmit, this);
 	FrameGenerator ();
 }
 
@@ -270,23 +274,27 @@ StreamingClient::StopApplication ()
 }
 
 void 
-StreamingClient::RequestRetransmit(uint32_t seqNumber)
-{
-	for(uint32_t i=m_seqNumber;i<seqNumber;i++)
+StreamingClient::RequestRetransmit()
+{	
+	if (request_vector.size()>10)
 	{
-	    request_queue.push(i);
-	}
-
-	if (request_queue.size()>100)
-	{
-		//retransmit
-	
-		uint32_t request[100] = {0}; 
-		uint32_t idx = 0;
-		for(uint32_t i=0;i<100;i++)
+		std::vector<uint32_t>::iterator iter;
+		for (iter=request_vector.begin();iter!=request_vector.end();++iter)
 		{
-			request[idx] = request_queue.front();
-			request_queue.pop();
+			if (*iter<m_frameIdx*100)
+			{
+				request_vector.erase(iter);
+			}
+		}
+
+		uint32_t request[30] = {0}; 
+		uint32_t idx = 0;
+		
+		sort(request_vector.begin(),request_vector.end());
+		
+		for(uint32_t i=0;i<30;i++)
+		{
+			request[idx] = request_vector[i];
 			idx++;
 		}
 		
@@ -299,9 +307,10 @@ StreamingClient::RequestRetransmit(uint32_t seqNumber)
 		Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
 		udpSocket->SendTo (p, 0, m_peerAddress);
 		
-		//printf("retransmit!!\n");
-
+		printf("retransmit request sent from client starting from %d...\n",request_vector[0]);
 	}
+	//m_requestEvent = Simulator::Schedule ( Seconds (double(1/20)), &StreamingClient::RequestRetransmit, this);
+
 }
 
 void StreamingClient::HandleRead (Ptr<Socket> socket)
@@ -338,10 +347,12 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 		uint32_t frameIdx = seqNumber/m_fpacketN;
 		uint32_t seqN = seqNumber - frameIdx * m_fpacketN;
 
-		//std::cout << "Frame Idx: " << frameIdx << "/ Seq: " << seqN << std::endl;
+		std::cout << "Frame Idx: " << frameIdx << "/ Seq: " << seqN << std::endl;
 
 		if (m_pChecker.size() < (m_bufferSize * 2 * m_fpacketN) )
 		{
+			
+
 			//dongwon
 			if (m_seqNumber == seqNumber)
 			{	
@@ -349,32 +360,26 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 			}
 			else if (m_seqNumber < seqNumber)
 			{
-				RequestRetransmit(seqNumber);
-				/*
-				uint32_t request[100] = {0}; 
-				uint32_t idx = 0;
+				printf("pushed %d packets to request vector\n",seqNumber-m_seqNumber);
 				for(uint32_t i=m_seqNumber;i<seqNumber;i++)
 				{
-					request[idx] = i;
-					idx++;
+	    			request_vector.push_back(i);
 				}
-				
-				Ptr<Packet> p;
-				p = Create<Packet> (m_packetSize);
-				ClientHeader header;
-				header.SetState(0)
-				header.SetCurrentFrame(m_frameIdx);
-				header.SetRetransmitRequest(request);
-				//SeqTsHeader header;
-				//header.SetSeq (0);
-				p->AddHeader (header);
 
-				Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
-				udpSocket->SendTo (p, 0, m_peerAddress);
-				*/
+				//RequestRetransmit(seqNumber);
+				m_seqNumber = seqNumber + 1;
 			}
-			else{
-				printf("Retransmit Arrived\n");
+			else
+			{
+				printf("retransmitted packet received form client..\n");
+				std::vector<uint32_t>::iterator iter;
+				for (iter=request_vector.begin();iter!=request_vector.end();++iter)
+				{
+					if (*iter == seqNumber || *iter<m_frameIdx*100)
+					{
+						request_vector.erase(iter);
+					}
+				}
 			}
 
 			if (m_pChecker.find(frameIdx) != m_pChecker.end())

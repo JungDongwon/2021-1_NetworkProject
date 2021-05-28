@@ -5,6 +5,8 @@
 #include "ns3/ptr.h"
 #include "ns3/ipv4-address.h"
 
+#include <deque>
+
 namespace ns3 {
 
 class Socket;
@@ -42,6 +44,10 @@ private:
 
 	bool m_lossEnable;
 	double m_errorRate;
+
+	//dongwon - retransmit
+	std::deque<uint32_t> retransmit_queue;
+	uint32_t currentFrame;
 };
 
 }
