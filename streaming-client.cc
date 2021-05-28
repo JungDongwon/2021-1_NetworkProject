@@ -277,14 +277,18 @@ StreamingClient::StopApplication ()
 void 
 StreamingClient::RequestRetransmit()
 {	
-	if (request_vector.size()>10)
+	if (request_vector.size() > 0)
 	{
 		std::vector<uint32_t>::iterator iter;
-		for (iter=request_vector.begin();iter!=request_vector.end();++iter)
+		for (iter=request_vector.begin();iter!=request_vector.end();)
 		{
 			if (*iter<m_frameIdx*100)
 			{
-				request_vector.erase(iter);
+				iter = request_vector.erase(iter);
+			}
+			else
+			{
+				iter++;
 			}
 		}
 
@@ -348,7 +352,7 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 		uint32_t frameIdx = seqNumber/m_fpacketN;
 		uint32_t seqN = seqNumber - frameIdx * m_fpacketN;
 
-		std::cout << "Frame Idx: " << frameIdx << "/ Seq: " << seqN << std::endl;
+		//std::cout << "Frame Idx: " << frameIdx << "/ Seq: " << seqN << std::endl;
 
 		if (m_pChecker.size() < (m_bufferSize * 2 * m_fpacketN) )
 		{

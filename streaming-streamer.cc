@@ -167,7 +167,7 @@ StreamingStreamer::SendPacket (void)
 	{
 		uint32_t count=0;
 		uint32_t retransmit_size = 0;
-		if (retransmit_queue.size()>10){
+		if (retransmit_queue.size()>0){
 			std::unique(retransmit_queue.begin(), retransmit_queue.end());
 			for(uint32_t i=0;i<30;i++)
 			{
