@@ -223,6 +223,14 @@ StreamingStreamer::HandleRead (Ptr<Socket> socket)
 					continue;
 			}
 
+			//dongwon
+			ClientHeader header;
+			packet->RemoveHeader (header);
+			uint16_t currentFrame = header.GetCurrentFrame ();
+			uint16_t* requests =  header.GetRetransmitRequest ();
+			printf("currentFrame: %d / requests[0]: %d",currentFrame, requests[0]);
+			
+			/*
 			SeqTsHeader seqTs;
 			packet->RemoveHeader (seqTs);
 			uint32_t pause = seqTs.GetSeq ();
@@ -230,6 +238,7 @@ StreamingStreamer::HandleRead (Ptr<Socket> socket)
 				m_pause = true;
 			else
 				m_pause = false;
+			*/
     }
     socket->GetSockName (localAddress);
 	}

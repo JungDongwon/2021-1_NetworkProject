@@ -23,6 +23,7 @@ public:
   virtual uint32_t Deserialize (Buffer::Iterator start);
   virtual uint32_t GetSerializedSize (void) const;
 private:
+  uint8_t state; 
   uint16_t currentFrame;  
   uint16_t retransmitRequest[100] = {0};
 };
