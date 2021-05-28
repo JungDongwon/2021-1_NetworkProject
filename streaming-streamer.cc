@@ -11,6 +11,7 @@
 #include "ns3/double.h"
 #include "ns3/boolean.h"
 
+#include "client-header.h"
 #include "streaming-streamer.h"
 
 namespace ns3 {
@@ -226,19 +227,18 @@ StreamingStreamer::HandleRead (Ptr<Socket> socket)
 			//dongwon
 			ClientHeader header;
 			packet->RemoveHeader (header);
+			uint8_t state = header.GetState();
 			uint16_t currentFrame = header.GetCurrentFrame ();
-			uint16_t* requests =  header.GetRetransmitRequest ();
-			printf("currentFrame: %d / requests[0]: %d",currentFrame, requests[0]);
+			uint32_t* requests =  header.GetRetransmitRequest ();
 			
-			/*
-			SeqTsHeader seqTs;
-			packet->RemoveHeader (seqTs);
-			uint32_t pause = seqTs.GetSeq ();
-			if (pause)
+			if (state == 1)  // pause packet
 				m_pause = true;
-			else
+			else if (state == 2)  // resume packet
 				m_pause = false;
-			*/
+			else if (state == 0)  // retransmit request packet
+				printf("state: %d / currentFrame: %d / requests[0] : %d\n",state, currentFrame, requests[0]);
+				
+			
     }
     socket->GetSockName (localAddress);
 	}

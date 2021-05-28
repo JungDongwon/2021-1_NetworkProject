@@ -44,15 +44,15 @@ ClientHeader::GetSerializedSize (void) const
 {
   // we reserve 2 bytes for our header.
 
-  // 1 + 2 + 200
-  return 203;
+  // 1 + 2 + 400
+  return 403;
 }
 void
 ClientHeader::Serialize (Buffer::Iterator start) const
 {
   // we can serialize two bytes at the start of the buffer.
   // we write them in network byte order.
-  start.WriteHtoU8 (state);
+  start.WriteU8 (state);
   start.WriteHtonU16 (currentFrame);
 
   for(uint32_t i=0;i<100;i++){
@@ -66,7 +66,7 @@ ClientHeader::Deserialize (Buffer::Iterator start)
   // we can deserialize two bytes from the start of the buffer.
   // we read them in network byte order and store them
   // in host byte order.
-  state = start.ReadNtohU8 ();
+  state = start.ReadU8 ();
   currentFrame = start.ReadNtohU16 ();
   for(uint32_t i=0;i<100;i++){
 	retransmitRequest[i] = start.ReadNtohU16();
@@ -77,9 +77,9 @@ ClientHeader::Deserialize (Buffer::Iterator start)
 }
 
 void 
-ClientHeader::Set (uint8_t _state, uint16_t currentFrame, uint16_t* _retransmitRequest)
+ClientHeader::Set (uint8_t _state, uint16_t _currentFrame, uint32_t* _retransmitRequest)
 {
-  state = _state
+  state = _state;
   currentFrame = _currentFrame;
 
   for(uint32_t i=0;i<100;i++){
@@ -96,7 +96,7 @@ ClientHeader::GetCurrentFrame (void) const
 {
   return currentFrame;
 }
-uint16_t* 
+uint32_t* 
 ClientHeader::GetRetransmitRequest (void) 
 {
   return retransmitRequest;

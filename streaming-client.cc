@@ -132,15 +132,38 @@ StreamingClient::FrameConsumer (void)
 	{
 		Ptr<Packet> p;
 		p = Create<Packet> (m_packetSize);
+		ClientHeader header;
+		uint32_t request[100] = {0};
+		header.Set(1, m_frameIdx, request);
+		p->AddHeader (header);
+
+		Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
+		udpSocket->SendTo (p, 0, m_peerAddress);
+
+		/*
+		Ptr<Packet> p;
+		p = Create<Packet> (m_packetSize);
 		SeqTsHeader header;
 		header.SetSeq (1);
 		p->AddHeader (header);
 
 		Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
 		udpSocket->SendTo (p, 0, m_peerAddress);
+		*/
 	}
 	else if (m_frameCnt <= (int)m_resume)
 	{
+		Ptr<Packet> p;
+		p = Create<Packet> (m_packetSize);
+		ClientHeader header;
+		uint32_t request[100] = {0};
+		header.Set(2, m_frameIdx, request);
+		p->AddHeader (header);
+
+		Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
+		udpSocket->SendTo (p, 0, m_peerAddress);
+
+		/*
 		Ptr<Packet> p;
 		p = Create<Packet> (m_packetSize);
 		SeqTsHeader header;
@@ -149,6 +172,7 @@ StreamingClient::FrameConsumer (void)
 
 		Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
 		udpSocket->SendTo (p, 0, m_peerAddress);
+		*/
 	}
 
 	m_consumEvent = Simulator::Schedule ( Seconds ((double)1.0/60), &StreamingClient::FrameConsumer, this);
@@ -245,6 +269,41 @@ StreamingClient::StopApplication ()
 	Simulator::Cancel (m_consumEvent);
 }
 
+void 
+StreamingClient::RequestRetransmit(uint32_t seqNumber)
+{
+	for(uint32_t i=m_seqNumber;i<seqNumber;i++)
+	{
+	    request_queue.push(i);
+	}
+
+	if (request_queue.size()>100)
+	{
+		//retransmit
+	
+		uint32_t request[100] = {0}; 
+		uint32_t idx = 0;
+		for(uint32_t i=0;i<100;i++)
+		{
+			request[idx] = request_queue.front();
+			request_queue.pop();
+			idx++;
+		}
+		
+		Ptr<Packet> p;
+		p = Create<Packet> (m_packetSize);
+		ClientHeader header;
+		header.Set(0, m_frameIdx, request);
+		p->AddHeader (header);
+
+		Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
+		udpSocket->SendTo (p, 0, m_peerAddress);
+		
+		//printf("retransmit!!\n");
+
+	}
+}
+
 void StreamingClient::HandleRead (Ptr<Socket> socket)
 {
 	NS_LOG_FUNCTION (this << socket);
@@ -275,14 +334,49 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 
 		SeqTsHeader seqTs;
 		packet->RemoveHeader (seqTs);
-		uint32_t seqN = seqTs.GetSeq();
-		uint32_t frameIdx = seqN/m_fpacketN;
-		seqN = seqN - frameIdx * m_fpacketN;
+		uint32_t seqNumber = seqTs.GetSeq();
+		uint32_t frameIdx = seqNumber/m_fpacketN;
+		uint32_t seqN = seqNumber - frameIdx * m_fpacketN;
 
 		//std::cout << "Frame Idx: " << frameIdx << "/ Seq: " << seqN << std::endl;
 
 		if (m_pChecker.size() < (m_bufferSize * 2 * m_fpacketN) )
 		{
+			//dongwon
+			if (m_seqNumber == seqNumber)
+			{	
+				m_seqNumber++;
+			}
+			else if (m_seqNumber < seqNumber)
+			{
+				RequestRetransmit(seqNumber);
+				/*
+				uint32_t request[100] = {0}; 
+				uint32_t idx = 0;
+				for(uint32_t i=m_seqNumber;i<seqNumber;i++)
+				{
+					request[idx] = i;
+					idx++;
+				}
+				
+				Ptr<Packet> p;
+				p = Create<Packet> (m_packetSize);
+				ClientHeader header;
+				header.SetState(0)
+				header.SetCurrentFrame(m_frameIdx);
+				header.SetRetransmitRequest(request);
+				//SeqTsHeader header;
+				//header.SetSeq (0);
+				p->AddHeader (header);
+
+				Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
+				udpSocket->SendTo (p, 0, m_peerAddress);
+				*/
+			}
+			else{
+				printf("Retransmit Arrived\n");
+			}
+
 			if (m_pChecker.find(frameIdx) != m_pChecker.end())
 			{
 				FrameCheck tc = m_pChecker[frameIdx];

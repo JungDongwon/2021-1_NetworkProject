@@ -12,9 +12,10 @@ public:
   ClientHeader ();
   virtual ~ClientHeader ();
 
-  void Set (uint16_t, uint16_t*);
+  void Set (uint8_t, uint16_t, uint32_t*);
+  uint8_t GetState (void) const; 
   uint16_t GetCurrentFrame (void) const;
-  uint16_t* GetRetransmitRequest (void);
+  uint32_t* GetRetransmitRequest (void);
 
   static TypeId GetTypeId (void);
   virtual TypeId GetInstanceTypeId (void) const;
@@ -25,7 +26,7 @@ public:
 private:
   uint8_t state; 
   uint16_t currentFrame;  
-  uint16_t retransmitRequest[100] = {0};
+  uint32_t retransmitRequest[100] = {0};
 };
 
 

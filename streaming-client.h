@@ -7,6 +7,7 @@
 #include "ns3/address.h"
 
 #include <map>
+#include <queue>
 
 namespace ns3{
 
@@ -61,6 +62,10 @@ private:
 
 	// Frame Generator
 	EventId m_genEvent;
+
+	//dongwon - queue
+	void RequestRetransmit(uint32_t);
+	std::queue<uint32_t> request_queue;
 };
 
 
