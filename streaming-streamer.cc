@@ -165,15 +165,14 @@ StreamingStreamer::SendPacket (void)
 
 	if (!m_pause)
 	{
-		uint32_t count=0;
-		uint32_t retransmit_size = 0;
+		uint32_t retransmit_count=0;
 		if (retransmit_queue.size()>0){
 			std::unique(retransmit_queue.begin(), retransmit_queue.end());
 			for(uint32_t i=0;i<30;i++)
 			{
 				if (retransmit_queue.empty())
 					break;
-				count++;
+				retransmit_count++;
 				uint32_t retransmit_packet = retransmit_queue.front();
 				if (retransmit_packet < currentFrame*100)
 				{
@@ -191,11 +190,11 @@ StreamingStreamer::SendPacket (void)
 				retransmit_queue.pop_front();
 			}
 
-			printf("retransmitted %d packets from streamer  \n",count);
+			printf("retransmitted %d packets from streamer  \n",retransmit_count);
 		}
-		if (m_fpacketN - count > 0)
+		if (m_fpacketN - retransmit_count > 0)
 		{
-			for (uint32_t i=0; i<m_fpacketN - retransmit_size; i++)
+			for (uint32_t i=0; i<m_fpacketN - retransmit_count; i++)
 			{
 				Ptr<Packet> p;
 				p = Create<Packet> (m_size);
