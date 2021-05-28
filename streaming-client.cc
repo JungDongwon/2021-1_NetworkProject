@@ -376,7 +376,7 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 			}
 			else
 			{
-				printf("retransmitted packet received form client..\n");
+				//printf("retransmitted packet received form client..\n");
 				std::vector<uint32_t>::iterator iter;
 				for (iter=request_vector.begin();iter!=request_vector.end();)
 				{

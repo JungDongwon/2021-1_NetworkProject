@@ -168,17 +168,26 @@ StreamingStreamer::SendPacket (void)
 		uint32_t retransmit_count=0;
 		if (retransmit_queue.size()>0){
 			std::unique(retransmit_queue.begin(), retransmit_queue.end());
-			for(uint32_t i=0;i<30;i++)
+
+			std::deque<uint32_t>::iterator iter;
+			for(iter=retransmit_queue.begin();iter!=retransmit_queue.end();)
+			{
+				if (*iter < currentFrame*100)
+				{
+					iter = retransmit_queue.erase(iter);
+				}
+				else
+				{
+					iter++;
+				}
+			}
+
+			for(uint32_t i=0;i<100;i++)
 			{
 				if (retransmit_queue.empty())
 					break;
 				retransmit_count++;
 				uint32_t retransmit_packet = retransmit_queue.front();
-				if (retransmit_packet < currentFrame*100)
-				{
-					retransmit_queue.pop_front();
-					continue;
-				}
 				Ptr<Packet> p;
 				p = Create<Packet> (m_size);
 				Address localAddress;

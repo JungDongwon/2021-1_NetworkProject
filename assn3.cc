@@ -29,9 +29,9 @@ main (int argc, char *argv[])
 	 */
 
 	// Forced Packet Error Generate
-	double errorRate = 0.5; // 0 ~ 100 %
+	double errorRate = 0.1; // 0 ~ 100 %
 	errorRate = errorRate / 100;
-	bool packetLossEnable = false; // on/off
+	bool packetLossEnable = true; // on/off
 
 	// Server Configuration
 	uint32_t sendFPS = 90; 
