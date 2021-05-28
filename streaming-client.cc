@@ -114,6 +114,7 @@ StreamingClient::FrameConsumer (void)
 		}
 		else if (m_frameCnt == 0)
 		{
+			printf("frame %d not consumed\n",m_frameIdx);
 			NS_LOG_INFO("FrameConsumerLog::NoConsume");
 		}
 		else
@@ -373,11 +374,15 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 			{
 				printf("retransmitted packet received form client..\n");
 				std::vector<uint32_t>::iterator iter;
-				for (iter=request_vector.begin();iter!=request_vector.end();++iter)
+				for (iter=request_vector.begin();iter!=request_vector.end();)
 				{
 					if (*iter == seqNumber || *iter<m_frameIdx*100)
 					{
-						request_vector.erase(iter);
+						iter = request_vector.erase(iter);
+					}
+					else
+					{
+						iter++;
 					}
 				}
 			}
