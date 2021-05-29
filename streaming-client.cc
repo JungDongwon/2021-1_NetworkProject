@@ -363,7 +363,7 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 			}
 			else if (m_seqNumber < seqNumber)
 			{
-				printf("pushed %d packets to request vector\n",seqNumber-m_seqNumber);
+				//printf("pushed %d packets to request vector\n",seqNumber-m_seqNumber);
 				for(uint32_t i=m_seqNumber;i<seqNumber;i++)
 				{
 	    			request_vector.push_back(i);
