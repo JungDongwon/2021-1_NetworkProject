@@ -293,7 +293,7 @@ StreamingClient::RequestRetransmit()
 		uint32_t request[100] = {0}; 
 		uint32_t idx = 0;
 		
-		sort(request_vector.begin(),request_vector.end());
+		//sort(request_vector.begin(),request_vector.end());
 		
 		for(uint32_t i=0;i<std::min(uint32_t(request_vector.size()),uint32_t(100));i++)
 		{
@@ -312,7 +312,6 @@ StreamingClient::RequestRetransmit()
 		
 		printf("retransmit request sent from client starting from %d...\n",request_vector[0]);
 	}
-	//m_requestEvent = Simulator::Schedule ( Seconds (double(1/20)), &StreamingClient::RequestRetransmit, this);
 
 }
 

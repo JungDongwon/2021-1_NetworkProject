@@ -29,7 +29,7 @@ main (int argc, char *argv[])
 	 */
 
 	// Forced Packet Error Generate
-	double errorRate = 1.0; // 0 ~ 100 %
+	double errorRate = 10.0; // 0 ~ 100 %
 	errorRate = errorRate / 100;
 	bool packetLossEnable = true; // on/off
 
@@ -39,7 +39,7 @@ main (int argc, char *argv[])
 	// Client Configuration
 	uint32_t bufferSize = 40;
 	uint32_t pauseSize = 30;
-	uint32_t resumeSize = 5;
+	uint32_t resumeSize = 25;
 	double consumeStartTime = 1.3; // Seconds
 
 	/*
