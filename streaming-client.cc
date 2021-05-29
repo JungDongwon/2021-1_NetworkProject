@@ -120,7 +120,7 @@ StreamingClient::FrameConsumer (void)
 		{
 			NS_LOG_INFO("FrameConsumerLog::NoConsume");
 		}
-		NS_LOG_INFO("FrameConsumerLog::RamainFrames: " << m_frameCnt);
+		NS_LOG_INFO("FrameConsumerLog::RemainFrames: " << m_frameCnt);
 	}
 	else if (m_frameCnt < 0)
 	{
@@ -290,12 +290,12 @@ StreamingClient::RequestRetransmit()
 			}
 		}
 
-		uint32_t request[30] = {0}; 
+		uint32_t request[100] = {0}; 
 		uint32_t idx = 0;
 		
 		sort(request_vector.begin(),request_vector.end());
 		
-		for(uint32_t i=0;i<std::min(uint32_t(request_vector.size()),uint32_t(30));i++)
+		for(uint32_t i=0;i<std::min(uint32_t(request_vector.size()),uint32_t(100));i++)
 		{
 			request[idx] = request_vector[i];
 			idx++;

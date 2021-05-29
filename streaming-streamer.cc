@@ -201,9 +201,9 @@ StreamingStreamer::SendPacket (void)
 
 			printf("retransmitted %d packets from streamer  \n",retransmit_count);
 		}
-		if (m_fpacketN - retransmit_count > 0)
-		{
-			for (uint32_t i=0; i<m_fpacketN - retransmit_count; i++)
+//		if (m_fpacketN - retransmit_count > 0)
+//		{
+			for (uint32_t i=0; i<m_fpacketN; i++)
 			{
 				Ptr<Packet> p;
 				p = Create<Packet> (m_size);
@@ -218,7 +218,7 @@ StreamingStreamer::SendPacket (void)
 				m_socket->Send (p);
 				++m_sent;
 			}
-		}
+//		}
 	}
 
 	// Packet Log
@@ -278,8 +278,21 @@ StreamingStreamer::HandleRead (Ptr<Socket> socket)
 				m_pause = false;
 			else if (state == 0)  // retransmit request packet
 			{
-				printf("retransmit request received... from %d..(current frame: %d) \n", requests[0], currentFrame);
-				for(uint32_t i=0;i<30;i++){
+				std::deque<uint32_t>::iterator iter;
+				for(iter=retransmit_queue.begin();iter!=retransmit_queue.end();)
+				{
+					if (*iter < currentFrame*100)
+					{
+						iter = retransmit_queue.erase(iter);
+					}
+					else
+					{
+						iter++;
+					}
+				}
+
+				//printf("retransmit request received... from %d..(current frame: %d) \n", requests[0], currentFrame);
+				for(uint32_t i=0;i<100;i++){
 					if (requests[i] == 0) 
 						break;	
 					retransmit_queue.push_back(requests[i]);
