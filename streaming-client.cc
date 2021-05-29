@@ -89,7 +89,6 @@ StreamingClient::StreamingClient ()
 	m_seqNumber = 0;
 	m_consumEvent = EventId ();
 	m_genEvent = EventId ();
-	m_requestEvent = EventId();
 	m_frameCnt = 0;
 	m_frameIdx = 0;
 }
@@ -296,7 +295,7 @@ StreamingClient::RequestRetransmit()
 		
 		sort(request_vector.begin(),request_vector.end());
 		
-		for(uint32_t i=0;i<min(request_vector.size(),30);i++)
+		for(uint32_t i=0;i<std::min(uint32_t(request_vector.size()),uint32_t(30));i++)
 		{
 			request[idx] = request_vector[i];
 			idx++;
