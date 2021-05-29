@@ -1,0 +1,17 @@
+Waf: Entering directory `/mnt/c/net_proj/ns-allinone-3.29/ns-3.29/build'
+[1796/1850] Compiling scratch/assn3/streaming-client.cc
+[1810/1850] Linking build/scratch/assn3/assn3
+Waf: Leaving directory `/mnt/c/net_proj/ns-allinone-3.29/ns-3.29/build'
+Build commands will be stored in build/compile_commands.json
+'build' finished successfully (40.396s)
+retransmitted 97 packets from streamer  
+retransmitted 1 packets from streamer  
+retransmitted 1 packets from streamer  
+retransmitted 1 packets from streamer  
+retransmitted 1 packets from streamer  
+retransmitted 1 packets from streamer  
+retransmitted 1 packets from streamer  
+retransmitted 1 packets from streamer  
+retransmitted 2 packets from streamer  
+retransmitted 1 packets from streamer  
+retransmitted 1 packets from streamer  

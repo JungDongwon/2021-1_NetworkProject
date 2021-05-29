@@ -17,8 +17,9 @@ main (int argc, char *argv[])
 {
 	srand(time(NULL));
 
-    LogComponentEnable("StreamingStreamerApplication", (LogLevel)(LOG_LEVEL_INFO|LOG_PREFIX_TIME|LOG_PREFIX_NODE));
-	LogComponentEnable("StreamingClientApplication", (LogLevel)(LOG_LEVEL_INFO|LOG_PREFIX_TIME|LOG_PREFIX_NODE));
+    // LogComponentEnable("StreamingStreamerApplication", (LogLevel)(LOG_LEVEL_INFO|LOG_PREFIX_TIME|LOG_PREFIX_NODE));
+	// LogComponentEnable("StreamingClientApplication", (LogLevel)(LOG_LEVEL_INFO|LOG_PREFIX_TIME|LOG_PREFIX_NODE));
+	LogComponentEnable("StreamingClientApplication", LOG_LEVEL_INFO);
 
 	/*
 	 * ========================
@@ -31,7 +32,7 @@ main (int argc, char *argv[])
 	// Forced Packet Error Generate
 	double errorRate = 10.0; // 0 ~ 100 %
 	errorRate = errorRate / 100;
-	bool packetLossEnable = true; // on/off
+	bool packetLossEnable = false; // on/off
 
 	// Server Configuration
 	uint32_t sendFPS = 90; 
@@ -51,7 +52,7 @@ main (int argc, char *argv[])
 	uint32_t payloadSize = 1472;
 	bool tcp = false;
 	uint32_t fpacketN = 100;
-	double simulationTime = 10;
+	double simulationTime = 60;
 	CommandLine cmd;
 
 	if (tcp)
@@ -154,5 +155,6 @@ main (int argc, char *argv[])
 	Simulator::Stop (Seconds (simulationTime));
 	Simulator::Run ();
 	Simulator::Destroy ();
+
 	return 0;
 }

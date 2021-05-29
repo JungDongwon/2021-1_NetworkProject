@@ -91,6 +91,7 @@ StreamingClient::StreamingClient ()
 	m_genEvent = EventId ();
 	m_frameCnt = 0;
 	m_frameIdx = 0;
+	m_throughputEvent = EventId ();
 }
 
 StreamingClient::~StreamingClient ()
@@ -109,22 +110,22 @@ StreamingClient::FrameConsumer (void)
 		{
 			m_frameCnt -= 1;
 			m_frameBuffer.erase(m_frameIdx);
-			NS_LOG_INFO("FrameConsumerLog::Consume");
+			//NS_LOG_INFO("FrameConsumerLog::Consume");
 		}
 		else if (m_frameCnt == 0)
 		{
-			printf("frame %d not consumed\n",m_frameIdx);
-			NS_LOG_INFO("FrameConsumerLog::NoConsume");
+			//printf("frame %d not consumed\n",m_frameIdx);
+			//NS_LOG_INFO("FrameConsumerLog::NoConsume");
 		}
 		else
 		{
-			NS_LOG_INFO("FrameConsumerLog::NoConsume");
+			//NS_LOG_INFO("FrameConsumerLog::NoConsume");
 		}
-		NS_LOG_INFO("FrameConsumerLog::RemainFrames: " << m_frameCnt);
+		//NS_LOG_INFO("FrameConsumerLog::RemainFrames: " << m_frameCnt);
 	}
 	else if (m_frameCnt < 0)
 	{
-		NS_LOG_INFO("FrameCountError!");
+		//NS_LOG_INFO("FrameCountError!");
 		exit (1);
 	}
 	m_frameIdx += 1;
@@ -257,6 +258,7 @@ StreamingClient::StartApplication (void)
 
 	m_socket->SetRecvCallback (MakeCallback (&StreamingClient::HandleRead, this));
 	m_consumEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::FrameConsumer, this);
+	m_throughputEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::CalcThroughput, this);
 	FrameGenerator ();
 }
 
@@ -270,6 +272,7 @@ StreamingClient::StopApplication ()
   }
 
 	Simulator::Cancel (m_consumEvent);
+	Simulator::Cancel (m_throughputEvent);
 }
 
 void 
@@ -310,7 +313,7 @@ StreamingClient::RequestRetransmit()
 		Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
 		udpSocket->SendTo (p, 0, m_peerAddress);
 		
-		printf("retransmit request sent from client starting from %d...\n",request_vector[0]);
+		//printf("retransmit request sent from client starting from %d...\n",request_vector[0]);
 	}
 
 }
@@ -318,7 +321,7 @@ StreamingClient::RequestRetransmit()
 void StreamingClient::HandleRead (Ptr<Socket> socket)
 {
 	NS_LOG_FUNCTION (this << socket);
-
+	
 	Ptr<Packet> packet;
 	Address from;
 	Address localAddress;
@@ -401,7 +404,18 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 				m_pChecker.insert({frameIdx,c});
 			}
 		}
+
+		m_recv += 1;
 	}
+}
+
+void StreamingClient::CalcThroughput()
+{
+	uint32_t now_recv = m_recv;
+	double throughput = (now_recv - prev_recv_packet) * m_packetSize * 8/ 1000000.0;
+	NS_LOG_INFO(Simulator::Now ().GetSeconds () << "\t" << throughput);
+	prev_recv_packet = now_recv;
+	m_throughputEvent = Simulator::Schedule ( Seconds (1.0), &StreamingClient::CalcThroughput, this);
 }
 
 FrameCheck::FrameCheck ()
