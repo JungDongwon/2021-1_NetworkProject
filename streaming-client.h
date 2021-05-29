@@ -64,7 +64,6 @@ private:
 	EventId m_genEvent;
 
 	//dongwon - retransmit
-	EventId m_requestEvent;
 	void RequestRetransmit();
 	std::vector<uint32_t> request_vector;
 };

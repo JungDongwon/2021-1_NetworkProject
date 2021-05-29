@@ -29,7 +29,7 @@ main (int argc, char *argv[])
 	 */
 
 	// Forced Packet Error Generate
-	double errorRate = 0.1; // 0 ~ 100 %
+	double errorRate = 1.0; // 0 ~ 100 %
 	errorRate = errorRate / 100;
 	bool packetLossEnable = true; // on/off
 

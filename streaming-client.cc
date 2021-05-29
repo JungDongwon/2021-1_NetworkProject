@@ -223,7 +223,7 @@ StreamingClient::FrameGenerator (void)
 		}
 	}
 
-	m_genEvent = Simulator::Schedule ( Seconds ((double)1.0/120), &StreamingClient::FrameGenerator, this);
+	m_genEvent = Simulator::Schedule ( Seconds ((double)1.0/20), &StreamingClient::FrameGenerator, this);
 }
 
 
@@ -258,7 +258,6 @@ StreamingClient::StartApplication (void)
 
 	m_socket->SetRecvCallback (MakeCallback (&StreamingClient::HandleRead, this));
 	m_consumEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::FrameConsumer, this);
-	//m_requestEvent = Simulator::Schedule ( Seconds (double(1/20)), &StreamingClient::RequestRetransmit, this);
 	FrameGenerator ();
 }
 
@@ -297,7 +296,7 @@ StreamingClient::RequestRetransmit()
 		
 		sort(request_vector.begin(),request_vector.end());
 		
-		for(uint32_t i=0;i<30;i++)
+		for(uint32_t i=0;i<min(request_vector.size(),30);i++)
 		{
 			request[idx] = request_vector[i];
 			idx++;
