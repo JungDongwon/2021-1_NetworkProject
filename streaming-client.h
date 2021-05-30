@@ -34,6 +34,7 @@ public:
 	void FrameGenerator (void);
 	// ==========
 	void CalcThroughput (void);
+	void BufferingChecker (void);
 	// ==========
 	std::map<uint32_t, FrameCheck> m_pChecker;
 
@@ -68,7 +69,9 @@ private:
 	uint32_t prev_recv_packet = 0;
 	EventId m_throughputEvent;
 	uint32_t m_recv = 0;
-	// ~
+
+	EventId m_bufferingEvent;
+	// ~buffering test
 
 	// Frame Generator
 	EventId m_genEvent;

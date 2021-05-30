@@ -92,6 +92,7 @@ StreamingClient::StreamingClient ()
 	m_frameCnt = 0;
 	m_frameIdx = 0;
 	m_throughputEvent = EventId ();
+	m_bufferingEvent = EventId ();
 }
 
 StreamingClient::~StreamingClient ()
@@ -122,6 +123,7 @@ StreamingClient::FrameConsumer (void)
 			//NS_LOG_INFO("FrameConsumerLog::NoConsume");
 		}
 		//NS_LOG_INFO("FrameConsumerLog::RemainFrames: " << m_frameCnt);
+		NS_LOG_INFO(Simulator::Now().GetSeconds() << "\t" << m_frameCnt);
 	}
 	else if (m_frameCnt < 0)
 	{
@@ -257,7 +259,8 @@ StreamingClient::StartApplication (void)
   }
 
 	m_socket->SetRecvCallback (MakeCallback (&StreamingClient::HandleRead, this));
-	m_consumEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::FrameConsumer, this);
+	// m_consumEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::FrameConsumer, this);
+	m_bufferingEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::BufferingChecker, this);
 	m_throughputEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::CalcThroughput, this);
 	FrameGenerator ();
 }
@@ -412,11 +415,24 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 void StreamingClient::CalcThroughput()
 {
 	uint32_t now_recv = m_recv;
-	double throughput = (now_recv - prev_recv_packet) * m_packetSize * 8/ 1000000.0;
-	NS_LOG_INFO(Simulator::Now ().GetSeconds () << "\t" << throughput);
+	// double throughput = (now_recv - prev_recv_packet) * m_packetSize * 8/ 1000000.0;
+	// NS_LOG_INFO(Simulator::Now ().GetSeconds () << "\t" << throughput);
 	prev_recv_packet = now_recv;
 	m_throughputEvent = Simulator::Schedule ( Seconds (1.0), &StreamingClient::CalcThroughput, this);
 }
+
+void StreamingClient::BufferingChecker()
+{
+	if (m_frameCnt < 15)
+	{
+		m_bufferingEvent = Simulator::Schedule ( Seconds ((double)1.0/60.0), &StreamingClient::BufferingChecker, this);
+	}
+	else
+	{
+		m_consumEvent = Simulator::Schedule ( Seconds (0.0), &StreamingClient::FrameConsumer, this);
+	}
+}
+
 
 FrameCheck::FrameCheck ()
 {

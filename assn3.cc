@@ -41,7 +41,7 @@ main (int argc, char *argv[])
 	uint32_t bufferSize = 40;
 	uint32_t pauseSize = 30;
 	uint32_t resumeSize = 25;
-	double consumeStartTime = 1.3; // Seconds
+	double consumeStartTime = 1.0; // Seconds
 
 	/*
 	 * =======================
