@@ -30,9 +30,8 @@ main (int argc, char *argv[])
 	 */
 
 	// Forced Packet Error Generate
-	double errorRate = 10.0; // 0 ~ 100 %
-	errorRate = errorRate / 100;
-	bool packetLossEnable = false; // on/off
+	double errorRate = 0.0; // 0 ~ 100 %
+	bool packetLossEnable = true; // on/off
 
 	// Server Configuration
 	uint32_t sendFPS = 90; 
@@ -42,6 +41,7 @@ main (int argc, char *argv[])
 	uint32_t pauseSize = 30;
 	uint32_t resumeSize = 25;
 	double consumeStartTime = 1.0; // Seconds
+	uint32_t buffering = 15;
 
 	/*
 	 * =======================
@@ -54,6 +54,10 @@ main (int argc, char *argv[])
 	uint32_t fpacketN = 100;
 	double simulationTime = 60;
 	CommandLine cmd;
+
+	cmd.AddValue("error", "error rate", errorRate);
+	cmd.AddValue("buffering", "buffering", buffering);
+	cmd.Parse(argc, argv);
 
 	if (tcp)
 	{
@@ -133,7 +137,7 @@ main (int argc, char *argv[])
 	streamer.SetAttribute ("FramePackets", UintegerValue (fpacketN));
 	streamer.SetAttribute ("StreamingFPS", UintegerValue (sendFPS));
 	streamer.SetAttribute ("PacketLossEnable", BooleanValue (packetLossEnable));
-	streamer.SetAttribute ("ErrorRate", DoubleValue (errorRate));
+	streamer.SetAttribute ("ErrorRate", DoubleValue (errorRate / 100));
 	ApplicationContainer streamerApp = streamer.Install (wifiApNode.Get (0));
 	streamerApp.Start (Seconds (1.0));
 	streamerApp.Stop (Seconds (simulationTime));
@@ -146,7 +150,8 @@ main (int argc, char *argv[])
 	client.SetAttribute ("ResumeSize", UintegerValue (resumeSize));
 	client.SetAttribute ("ConsumeStartTime", DoubleValue (consumeStartTime));
 	client.SetAttribute ("PacketLossEnable", BooleanValue (packetLossEnable));
-	client.SetAttribute ("ErrorRate", DoubleValue (errorRate));
+	client.SetAttribute ("ErrorRate", DoubleValue (errorRate / 100));
+	client.SetAttribute ("Buffering", UintegerValue (buffering));
 	ApplicationContainer clientApp = client.Install (wifiStaNode.Get (0));
 	clientApp.Start (Seconds (0.0));
 	clientApp.Stop (Seconds (simulationTime));

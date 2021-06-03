@@ -71,6 +71,7 @@ private:
 	uint32_t m_recv = 0;
 
 	EventId m_bufferingEvent;
+	uint32_t m_buffering;
 	// ~buffering test
 
 	// Frame Generator

@@ -162,7 +162,7 @@ StreamingStreamer::SendPacket (void)
 
   NS_ASSERT (m_sendEvent.IsExpired ());
 
-
+	NS_LOG_INFO(Simulator::Now ().GetSeconds () << "    " << m_pause);
 	if (!m_pause)
 	{
 		uint32_t retransmit_count=0;
@@ -217,6 +217,16 @@ StreamingStreamer::SendPacket (void)
 
 				m_socket->Send (p);
 				++m_sent;
+				  if (Ipv4Address::IsMatchingType (m_peerAddress))
+  {
+    NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s streamer sent " << m_size << " bytes to " <<
+		Ipv4Address::ConvertFrom (m_peerAddress) << " port " << m_peerPort);
+  }
+  else if (InetSocketAddress::IsMatchingType (m_peerAddress))
+	{
+		NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s streamer sent " << m_size << " bytes to " <<
+    InetSocketAddress::ConvertFrom (m_peerAddress).GetIpv4 () << " port " << InetSocketAddress::ConvertFrom (m_peerAddress).GetPort ());
+  }
 			}
 //		}
 	}

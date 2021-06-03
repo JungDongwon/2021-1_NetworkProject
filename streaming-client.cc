@@ -12,6 +12,7 @@
 #include "ns3/seq-ts-header.h"
 #include "ns3/double.h"
 #include "ns3/boolean.h"
+#include <random>
 
 #include <algorithm>
 #include "client-header.h"
@@ -79,6 +80,11 @@ StreamingClient::GetTypeId (void)
                    DoubleValue (0.01),
                    MakeDoubleAccessor (&StreamingClient::m_errorRate),
                    MakeDoubleChecker<double> ())
+	.AddAttribute ("Buffering", 
+                   "Buffering",
+                   UintegerValue(15),
+                   MakeUintegerAccessor (&StreamingClient::m_buffering),
+                   MakeUintegerChecker<uint32_t> ())
 		;
 	return tid;
 }
@@ -111,19 +117,19 @@ StreamingClient::FrameConsumer (void)
 		{
 			m_frameCnt -= 1;
 			m_frameBuffer.erase(m_frameIdx);
-			//NS_LOG_INFO("FrameConsumerLog::Consume");
+			NS_LOG_INFO("FrameConsumerLog::Consume");
 		}
 		else if (m_frameCnt == 0)
 		{
 			//printf("frame %d not consumed\n",m_frameIdx);
-			//NS_LOG_INFO("FrameConsumerLog::NoConsume");
+			NS_LOG_INFO("FrameConsumerLog::NoConsume");
 		}
 		else
 		{
-			//NS_LOG_INFO("FrameConsumerLog::NoConsume");
+			NS_LOG_INFO("FrameConsumerLog::NoConsume");
 		}
-		//NS_LOG_INFO("FrameConsumerLog::RemainFrames: " << m_frameCnt);
-		NS_LOG_INFO(Simulator::Now().GetSeconds() << "\t" << m_frameCnt);
+		NS_LOG_INFO("FrameConsumerLog::RemainFrames: " << m_frameCnt);
+		//NS_LOG_INFO(Simulator::Now().GetSeconds() << "\t" << m_frameCnt);
 	}
 	else if (m_frameCnt < 0)
 	{
@@ -261,7 +267,7 @@ StreamingClient::StartApplication (void)
 	m_socket->SetRecvCallback (MakeCallback (&StreamingClient::HandleRead, this));
 	// m_consumEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::FrameConsumer, this);
 	m_bufferingEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::BufferingChecker, this);
-	m_throughputEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::CalcThroughput, this);
+	m_throughputEvent = Simulator::Schedule ( Seconds (m_consumeTime + 0.1), &StreamingClient::CalcThroughput, this);
 	FrameGenerator ();
 }
 
@@ -333,20 +339,24 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 		socket->GetSockName (localAddress);
 
 		// Packet Log
-		/*
+		
 		if (InetSocketAddress::IsMatchingType (from))
 		{
-			NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " <<
-					InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
-					InetSocketAddress::ConvertFrom (from).GetPort ());
+			// NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " <<
+			// 		InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
+			// 		InetSocketAddress::ConvertFrom (from).GetPort ());
 		}
-		*/
+		
 
 		if (m_lossEnable)
 		{
-			double prob = (double)rand() / RAND_MAX;
-			if (prob <= m_errorRate)
+			std::random_device rd;
+      		std::mt19937 gen(rd());
+      		std::uniform_int_distribution<int> dis(0, 99);
+			if (double(dis(gen))/100.0 <= m_errorRate){
 				continue;
+			}
+				 
 		}
 
 		SeqTsHeader seqTs;
@@ -355,7 +365,7 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 		uint32_t frameIdx = seqNumber/m_fpacketN;
 		uint32_t seqN = seqNumber - frameIdx * m_fpacketN;
 
-		//std::cout << "Frame Idx: " << frameIdx << "/ Seq: " << seqN << std::endl;
+		// NS_LOG_INFO ("Frame Idx: " << frameIdx << "/ Seq: " << seqN);
 
 		if (m_pChecker.size() < (m_bufferSize * 2 * m_fpacketN) )
 		{
@@ -423,7 +433,7 @@ void StreamingClient::CalcThroughput()
 
 void StreamingClient::BufferingChecker()
 {
-	if (m_frameCnt < 15)
+	if (m_frameCnt < (int)m_buffering)
 	{
 		m_bufferingEvent = Simulator::Schedule ( Seconds ((double)1.0/60.0), &StreamingClient::BufferingChecker, this);
 	}
