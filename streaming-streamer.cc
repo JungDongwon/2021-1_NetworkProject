@@ -198,41 +198,56 @@ StreamingStreamer::SendPacket (void)
 				m_socket->Send (p);
 				retransmit_queue.pop_front();
 			}
-
-			printf("retransmitted %d packets from streamer  \n",retransmit_count);
 		}
-//		if (m_fpacketN - retransmit_count > 0)
-//		{
-			for (uint32_t i=0; i<m_fpacketN; i++)
-			{
-				Ptr<Packet> p;
-				p = Create<Packet> (m_size);
 
-				Address localAddress;
-				m_socket->GetSockName (localAddress);
+		for (uint32_t i=0; i<m_fpacketN; i++)
+		{
+			Ptr<Packet> p;
+			p = Create<Packet> (m_size);
 
-				SeqTsHeader seqTs;	
-				seqTs.SetSeq (m_seqNumber++);
-				p->AddHeader (seqTs);
+			Address localAddress;
+			m_socket->GetSockName (localAddress);
 
+<<<<<<< Updated upstream
 				m_socket->Send (p);
 				++m_sent;
+=======
+			SeqTsHeader seqTs;	
+			seqTs.SetSeq (m_seqNumber++);
+			p->AddHeader (seqTs);
+
+			m_socket->Send (p);
+			++m_sent;
+
+			// packet log
+			/*
+			if (Ipv4Address::IsMatchingType (m_peerAddress))
+			{
+				NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s streamer sent " << m_size << " bytes to " <<
+					Ipv4Address::ConvertFrom (m_peerAddress) << " port " << m_peerPort);
 			}
-//		}
+			else if (InetSocketAddress::IsMatchingType (m_peerAddress))
+				{
+					NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s streamer sent " << m_size << " bytes to " <<
+				InetSocketAddress::ConvertFrom (m_peerAddress).GetIpv4 () << " port " << InetSocketAddress::ConvertFrom (m_peerAddress).GetPort ());
+>>>>>>> Stashed changes
+			}
+			*/
+		}
 	}
 
 	// Packet Log
 	/*
-  if (Ipv4Address::IsMatchingType (m_peerAddress))
-  {
-    NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s streamer sent " << m_size << " bytes to " <<
-		Ipv4Address::ConvertFrom (m_peerAddress) << " port " << m_peerPort);
-  }
-  else if (InetSocketAddress::IsMatchingType (m_peerAddress))
+	if (Ipv4Address::IsMatchingType (m_peerAddress))
 	{
 		NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s streamer sent " << m_size << " bytes to " <<
-    InetSocketAddress::ConvertFrom (m_peerAddress).GetIpv4 () << " port " << InetSocketAddress::ConvertFrom (m_peerAddress).GetPort ());
-  }
+			Ipv4Address::ConvertFrom (m_peerAddress) << " port " << m_peerPort);
+	}
+	else if (InetSocketAddress::IsMatchingType (m_peerAddress))
+		{
+			NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s streamer sent " << m_size << " bytes to " <<
+		InetSocketAddress::ConvertFrom (m_peerAddress).GetIpv4 () << " port " << InetSocketAddress::ConvertFrom (m_peerAddress).GetPort ());
+	}
 	*/
 
 	m_sendEvent = Simulator::Schedule ( Seconds ((double)1.0/m_fps), &StreamingStreamer::SendPacket, this);
@@ -251,55 +266,51 @@ StreamingStreamer::HandleRead (Ptr<Socket> socket)
   {
     if (InetSocketAddress::IsMatchingType (from))
     {
-			// Packet Log
-			/*
-      NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s streamer received " << packet->GetSize () << " bytes from " <<
-      InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
-      InetSocketAddress::ConvertFrom (from).GetPort ());
-			*/
+		// Packet Log
+		/*
+		NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s streamer received " << packet->GetSize () << " bytes from " <<
+		InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
+		InetSocketAddress::ConvertFrom (from).GetPort ());
+		*/
 
-			if (m_lossEnable)
-			{
-				double prob = (double)rand() / RAND_MAX;
-				if (prob <= m_errorRate)
-					continue;
-			}
+		if (m_lossEnable)
+		{
+			double prob = (double)rand() / RAND_MAX;
+			if (prob <= m_errorRate)
+				continue;
+		}
 
-			//dongwon
-			ClientHeader header;
-			packet->RemoveHeader (header);
-			uint8_t state = header.GetState();
-			uint16_t currentFrame = header.GetCurrentFrame ();
-			uint32_t* requests =  header.GetRetransmitRequest ();
-			
-			if (state == 1)  // pause packet
-				m_pause = true;
-			else if (state == 2)  // resume packet
-				m_pause = false;
-			else if (state == 0)  // retransmit request packet
+		//dongwon
+		ClientHeader header;
+		packet->RemoveHeader (header);
+		uint8_t state = header.GetState();
+		uint16_t currentFrame = header.GetCurrentFrame ();
+		uint32_t* requests =  header.GetRetransmitRequest ();
+		
+		if (state == 1)  // pause packet
+			m_pause = true;
+		else if (state == 2)  // resume packet
+			m_pause = false;
+		else if (state == 0)  // retransmit request packet
+		{
+			std::deque<uint32_t>::iterator iter;
+			for(iter=retransmit_queue.begin();iter!=retransmit_queue.end();)
 			{
-				std::deque<uint32_t>::iterator iter;
-				for(iter=retransmit_queue.begin();iter!=retransmit_queue.end();)
+				if (*iter < currentFrame*100)
 				{
-					if (*iter < currentFrame*100)
-					{
-						iter = retransmit_queue.erase(iter);
-					}
-					else
-					{
-						iter++;
-					}
+					iter = retransmit_queue.erase(iter);
 				}
-
-				//printf("retransmit request received... from %d..(current frame: %d) \n", requests[0], currentFrame);
-				for(uint32_t i=0;i<100;i++){
-					if (requests[i] == 0) 
-						break;	
-					retransmit_queue.push_back(requests[i]);
+				else
+				{
+					iter++;
 				}
 			}
-				
-			
+			for(uint32_t i=0;i<100;i++){
+				if (requests[i] == 0) 
+					break;	
+				retransmit_queue.push_back(requests[i]);
+			}
+		}
     }
     socket->GetSockName (localAddress);
 	}

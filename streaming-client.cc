@@ -110,15 +110,57 @@ StreamingClient::FrameConsumer (void)
 			m_frameCnt -= 1;
 			m_frameBuffer.erase(m_frameIdx);
 			NS_LOG_INFO("FrameConsumerLog::Consume");
+			// graph log
+			/*
+			double cond = Simulator::Now ().GetSeconds() - int(Simulator::Now ().GetSeconds());
+			if ((cond >= double(0.99)) | (cond <= double(0.51) && cond >= double(0.49)))
+			{
+				uint32_t now_recv = m_recv;
+				double throughput = (now_recv - prev_recv_packet) * m_packetSize * 8/ 500000.0;
+				NS_LOG_INFO(Simulator::Now ().GetSeconds () << "\t" << 1 << "\t" << m_frameCnt << "\t" << throughput);
+				prev_recv_packet = now_recv;
+			}
+			else NS_LOG_INFO(Simulator::Now ().GetSeconds () << "\t" << 1 << "\t" << m_frameCnt << "\t" << "0");
+			*/
+			// ~graph log
 		}
 		else if (m_frameCnt == 0)
 		{
+<<<<<<< Updated upstream
 			printf("frame %d not consumed\n",m_frameIdx);
+=======
+>>>>>>> Stashed changes
 			NS_LOG_INFO("FrameConsumerLog::NoConsume");
+			// graph log
+			/*
+			double cond = Simulator::Now ().GetSeconds() - int(Simulator::Now ().GetSeconds());
+			if ((cond >= double(0.99)) | (cond <= double(0.51) && cond >= double(0.49)))
+			{
+				uint32_t now_recv = m_recv;
+				double throughput = (now_recv - prev_recv_packet) * m_packetSize * 8/ 500000.0;
+				NS_LOG_INFO(Simulator::Now ().GetSeconds () << "\t" << 0 << "\t" << m_frameCnt << "\t" << throughput);
+				prev_recv_packet = now_recv;
+			}
+			else NS_LOG_INFO(Simulator::Now ().GetSeconds () << "\t" << 0 << "\t" << m_frameCnt << "\t" << "0");
+			*/
+			// ~graph log
 		}
 		else
 		{
 			NS_LOG_INFO("FrameConsumerLog::NoConsume");
+			// graph log
+			/*
+			double cond = Simulator::Now ().GetSeconds() - int(Simulator::Now ().GetSeconds());
+			if ((cond >= double(0.99)) | (cond <= double(0.51) && cond >= double(0.49)))
+			{
+				uint32_t now_recv = m_recv;
+				double throughput = (now_recv - prev_recv_packet) * m_packetSize * 8/ 500000.0;
+				NS_LOG_INFO(Simulator::Now ().GetSeconds () << "\t" << 0 << "\t" << m_frameCnt << "\t" << throughput);
+				prev_recv_packet = now_recv;
+			}
+			else NS_LOG_INFO(Simulator::Now ().GetSeconds () << "\t" << 0 << "\t" << m_frameCnt << "\t" << "0");
+			*/
+			// ~graph log
 		}
 		NS_LOG_INFO("FrameConsumerLog::RemainFrames: " << m_frameCnt);
 	}
@@ -141,17 +183,6 @@ StreamingClient::FrameConsumer (void)
 
 		Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
 		udpSocket->SendTo (p, 0, m_peerAddress);
-
-		/*
-		Ptr<Packet> p;
-		p = Create<Packet> (m_packetSize);
-		SeqTsHeader header;
-		header.SetSeq (1);
-		p->AddHeader (header);
-
-		Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
-		udpSocket->SendTo (p, 0, m_peerAddress);
-		*/
 	}
 	else if (m_frameCnt <= (int)m_resume)
 	{
@@ -164,17 +195,6 @@ StreamingClient::FrameConsumer (void)
 
 		Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
 		udpSocket->SendTo (p, 0, m_peerAddress);
-
-		/*
-		Ptr<Packet> p;
-		p = Create<Packet> (m_packetSize);
-		SeqTsHeader header;
-		header.SetSeq (0);
-		p->AddHeader (header);
-
-		Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
-		udpSocket->SendTo (p, 0, m_peerAddress);
-		*/
 	}
 
 	m_consumEvent = Simulator::Schedule ( Seconds ((double)1.0/60), &StreamingClient::FrameConsumer, this);
@@ -256,7 +276,12 @@ StreamingClient::StartApplication (void)
   }
 
 	m_socket->SetRecvCallback (MakeCallback (&StreamingClient::HandleRead, this));
+<<<<<<< Updated upstream
 	m_consumEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::FrameConsumer, this);
+=======
+	m_bufferingEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::BufferingChecker, this);
+	m_throughputEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::CalcThroughput, this);
+>>>>>>> Stashed changes
 	FrameGenerator ();
 }
 
@@ -293,8 +318,6 @@ StreamingClient::RequestRetransmit()
 		uint32_t request[100] = {0}; 
 		uint32_t idx = 0;
 		
-		//sort(request_vector.begin(),request_vector.end());
-		
 		for(uint32_t i=0;i<std::min(uint32_t(request_vector.size()),uint32_t(100));i++)
 		{
 			request[idx] = request_vector[i];
@@ -309,8 +332,11 @@ StreamingClient::RequestRetransmit()
 
 		Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
 		udpSocket->SendTo (p, 0, m_peerAddress);
+<<<<<<< Updated upstream
 		
 		printf("retransmit request sent from client starting from %d...\n",request_vector[0]);
+=======
+>>>>>>> Stashed changes
 	}
 
 }
@@ -327,7 +353,10 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 		socket->GetSockName (localAddress);
 
 		// Packet Log
+<<<<<<< Updated upstream
 		/*
+=======
+>>>>>>> Stashed changes
 		if (InetSocketAddress::IsMatchingType (from))
 		{
 			NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " <<
@@ -349,31 +378,22 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 		uint32_t frameIdx = seqNumber/m_fpacketN;
 		uint32_t seqN = seqNumber - frameIdx * m_fpacketN;
 
-		//std::cout << "Frame Idx: " << frameIdx << "/ Seq: " << seqN << std::endl;
-
 		if (m_pChecker.size() < (m_bufferSize * 2 * m_fpacketN) )
 		{
-			
-
-			//dongwon
 			if (m_seqNumber == seqNumber)
 			{	
 				m_seqNumber++;
 			}
 			else if (m_seqNumber < seqNumber)
 			{
-				//printf("pushed %d packets to request vector\n",seqNumber-m_seqNumber);
 				for(uint32_t i=m_seqNumber;i<seqNumber;i++)
 				{
 	    			request_vector.push_back(i);
 				}
-
-				//RequestRetransmit(seqNumber);
 				m_seqNumber = seqNumber + 1;
 			}
 			else
 			{
-				//printf("retransmitted packet received form client..\n");
 				std::vector<uint32_t>::iterator iter;
 				for (iter=request_vector.begin();iter!=request_vector.end();)
 				{
@@ -401,6 +421,33 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 				m_pChecker.insert({frameIdx,c});
 			}
 		}
+<<<<<<< Updated upstream
+=======
+
+		m_recv += 1;
+	}
+}
+
+void StreamingClient::CalcThroughput()
+{
+	// If you want to print out throughput, enable under codes.
+	uint32_t now_recv = m_recv;
+	// double throughput = (now_recv - prev_recv_packet) * m_packetSize * 8/ 500000.0;
+	// NS_LOG_INFO(Simulator::Now ().GetSeconds () << "\t" << throughput);
+	prev_recv_packet = now_recv;
+	m_throughputEvent = Simulator::Schedule ( Seconds (0.5), &StreamingClient::CalcThroughput, this);
+}
+
+void StreamingClient::BufferingChecker()
+{
+	if (m_frameCnt < (int)m_buffering)
+	{
+		m_bufferingEvent = Simulator::Schedule ( Seconds ((double)1.0/60.0), &StreamingClient::BufferingChecker, this);
+	}
+	else
+	{
+		m_consumEvent = Simulator::Schedule ( Seconds (0.0), &StreamingClient::FrameConsumer, this);
+>>>>>>> Stashed changes
 	}
 }
 
