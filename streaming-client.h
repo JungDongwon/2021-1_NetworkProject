@@ -5,6 +5,7 @@
 #include "ns3/event-id.h"
 #include "ns3/ptr.h"
 #include "ns3/address.h"
+#include "ns3/application-container.h"
 
 #include <map>
 #include <vector>
@@ -31,6 +32,10 @@ public:
 
 	void FrameConsumer (void);
 	void FrameGenerator (void);
+	// ==========
+	void CalcThroughput (void);
+	void BufferingChecker (void);
+	// ==========
 	std::map<uint32_t, FrameCheck> m_pChecker;
 
 private:
@@ -59,6 +64,15 @@ private:
 	EventId m_consumEvent;
 	Address m_peerAddress;
 	double m_consumeTime;
+
+	// Throughput Test
+	uint32_t prev_recv_packet = 0;
+	EventId m_throughputEvent;
+	uint32_t m_recv = 0;
+
+	EventId m_bufferingEvent;
+	uint32_t m_buffering;
+	// ~buffering test
 
 	// Frame Generator
 	EventId m_genEvent;
