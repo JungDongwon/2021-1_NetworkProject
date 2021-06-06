@@ -208,10 +208,6 @@ StreamingStreamer::SendPacket (void)
 			Address localAddress;
 			m_socket->GetSockName (localAddress);
 
-<<<<<<< Updated upstream
-				m_socket->Send (p);
-				++m_sent;
-=======
 			SeqTsHeader seqTs;	
 			seqTs.SetSeq (m_seqNumber++);
 			p->AddHeader (seqTs);
@@ -230,7 +226,6 @@ StreamingStreamer::SendPacket (void)
 				{
 					NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s streamer sent " << m_size << " bytes to " <<
 				InetSocketAddress::ConvertFrom (m_peerAddress).GetIpv4 () << " port " << InetSocketAddress::ConvertFrom (m_peerAddress).GetPort ());
->>>>>>> Stashed changes
 			}
 			*/
 		}
