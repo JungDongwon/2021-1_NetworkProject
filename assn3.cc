@@ -17,6 +17,8 @@ main (int argc, char *argv[])
 {
 	srand(time(NULL));
 
+    // LogComponentEnable("StreamingStreamerApplication", (LogLevel)(LOG_LEVEL_INFO|LOG_PREFIX_TIME|LOG_PREFIX_NODE));
+	// LogComponentEnable("StreamingClientApplication", (LogLevel)(LOG_LEVEL_INFO|LOG_PREFIX_TIME|LOG_PREFIX_NODE));
 	LogComponentEnable("StreamingClientApplication", LOG_LEVEL_INFO);
 
 	/*
@@ -39,7 +41,7 @@ main (int argc, char *argv[])
 	uint32_t pauseSize = 30;
 	uint32_t resumeSize = 25;
 	double consumeStartTime = 1.0; // Seconds
-	uint32_t buffering = 15; // default
+	uint32_t buffering = 15;  // default
 
 	/*
 	 * =======================
@@ -48,10 +50,14 @@ main (int argc, char *argv[])
 	 */
 
 	uint32_t payloadSize = 1472;
-	bool tcp = true;
+	bool tcp = false;
 	uint32_t fpacketN = 100;
-	double simulationTime = 10;
+	double simulationTime = 60;
 	CommandLine cmd;
+
+	cmd.AddValue("error", "error rate", errorRate);
+	cmd.AddValue("buffering", "buffering", buffering);
+	cmd.Parse(argc, argv);
 
 	if (tcp)
 	{
@@ -131,7 +137,7 @@ main (int argc, char *argv[])
 	streamer.SetAttribute ("FramePackets", UintegerValue (fpacketN));
 	streamer.SetAttribute ("StreamingFPS", UintegerValue (sendFPS));
 	streamer.SetAttribute ("PacketLossEnable", BooleanValue (packetLossEnable));
-	streamer.SetAttribute ("ErrorRate", DoubleValue (errorRate));
+	streamer.SetAttribute ("ErrorRate", DoubleValue (errorRate / 100));
 	ApplicationContainer streamerApp = streamer.Install (wifiApNode.Get (0));
 	streamerApp.Start (Seconds (1.0));
 	streamerApp.Stop (Seconds (simulationTime));
@@ -144,7 +150,8 @@ main (int argc, char *argv[])
 	client.SetAttribute ("ResumeSize", UintegerValue (resumeSize));
 	client.SetAttribute ("ConsumeStartTime", DoubleValue (consumeStartTime));
 	client.SetAttribute ("PacketLossEnable", BooleanValue (packetLossEnable));
-	client.SetAttribute ("ErrorRate", DoubleValue (errorRate));
+	client.SetAttribute ("ErrorRate", DoubleValue (errorRate / 100));
+	client.SetAttribute ("Buffering", UintegerValue (buffering));
 	ApplicationContainer clientApp = client.Install (wifiStaNode.Get (0));
 	clientApp.Start (Seconds (0.0));
 	clientApp.Stop (Seconds (simulationTime));
@@ -153,5 +160,6 @@ main (int argc, char *argv[])
 	Simulator::Stop (Seconds (simulationTime));
 	Simulator::Run ();
 	Simulator::Destroy ();
+
 	return 0;
 }

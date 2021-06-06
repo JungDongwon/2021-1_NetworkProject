@@ -12,6 +12,7 @@
 #include "ns3/seq-ts-header.h"
 #include "ns3/double.h"
 #include "ns3/boolean.h"
+#include <random>
 
 #include <algorithm>
 #include "client-header.h"
@@ -79,6 +80,11 @@ StreamingClient::GetTypeId (void)
                    DoubleValue (0.01),
                    MakeDoubleAccessor (&StreamingClient::m_errorRate),
                    MakeDoubleChecker<double> ())
+	.AddAttribute ("Buffering", 
+                   "Buffering",
+                   UintegerValue(15),
+                   MakeUintegerAccessor (&StreamingClient::m_buffering),
+                   MakeUintegerChecker<uint32_t> ())
 		;
 	return tid;
 }
@@ -91,6 +97,8 @@ StreamingClient::StreamingClient ()
 	m_genEvent = EventId ();
 	m_frameCnt = 0;
 	m_frameIdx = 0;
+	m_throughputEvent = EventId ();
+	m_bufferingEvent = EventId ();
 }
 
 StreamingClient::~StreamingClient ()
@@ -350,9 +358,12 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 
 		if (m_lossEnable)
 		{
-			double prob = (double)rand() / RAND_MAX;
-			if (prob <= m_errorRate)
+			std::random_device rd;
+      		std::mt19937 gen(rd());
+      		std::uniform_int_distribution<int> dis(0, 99);
+			if (double(dis(gen))/100.0 <= m_errorRate){
 				continue;
+			}
 		}
 
 		SeqTsHeader seqTs;
