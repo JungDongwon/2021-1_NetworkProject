@@ -126,10 +126,6 @@ StreamingClient::FrameConsumer (void)
 		}
 		else if (m_frameCnt == 0)
 		{
-<<<<<<< Updated upstream
-			printf("frame %d not consumed\n",m_frameIdx);
-=======
->>>>>>> Stashed changes
 			NS_LOG_INFO("FrameConsumerLog::NoConsume");
 			// graph log
 			/*
@@ -276,12 +272,8 @@ StreamingClient::StartApplication (void)
   }
 
 	m_socket->SetRecvCallback (MakeCallback (&StreamingClient::HandleRead, this));
-<<<<<<< Updated upstream
-	m_consumEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::FrameConsumer, this);
-=======
 	m_bufferingEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::BufferingChecker, this);
 	m_throughputEvent = Simulator::Schedule ( Seconds (m_consumeTime), &StreamingClient::CalcThroughput, this);
->>>>>>> Stashed changes
 	FrameGenerator ();
 }
 
@@ -332,13 +324,7 @@ StreamingClient::RequestRetransmit()
 
 		Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket> (m_socket);
 		udpSocket->SendTo (p, 0, m_peerAddress);
-<<<<<<< Updated upstream
-		
-		printf("retransmit request sent from client starting from %d...\n",request_vector[0]);
-=======
->>>>>>> Stashed changes
 	}
-
 }
 
 void StreamingClient::HandleRead (Ptr<Socket> socket)
@@ -353,10 +339,7 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 		socket->GetSockName (localAddress);
 
 		// Packet Log
-<<<<<<< Updated upstream
 		/*
-=======
->>>>>>> Stashed changes
 		if (InetSocketAddress::IsMatchingType (from))
 		{
 			NS_LOG_INFO ("At time " << Simulator::Now ().GetSeconds () << "s client received " << packet->GetSize () << " bytes from " <<
@@ -421,8 +404,6 @@ void StreamingClient::HandleRead (Ptr<Socket> socket)
 				m_pChecker.insert({frameIdx,c});
 			}
 		}
-<<<<<<< Updated upstream
-=======
 
 		m_recv += 1;
 	}
@@ -447,7 +428,6 @@ void StreamingClient::BufferingChecker()
 	else
 	{
 		m_consumEvent = Simulator::Schedule ( Seconds (0.0), &StreamingClient::FrameConsumer, this);
->>>>>>> Stashed changes
 	}
 }
 

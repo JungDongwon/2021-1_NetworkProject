@@ -17,12 +17,7 @@ main (int argc, char *argv[])
 {
 	srand(time(NULL));
 
-<<<<<<< Updated upstream
-    LogComponentEnable("StreamingStreamerApplication", (LogLevel)(LOG_LEVEL_INFO|LOG_PREFIX_TIME|LOG_PREFIX_NODE));
-	LogComponentEnable("StreamingClientApplication", (LogLevel)(LOG_LEVEL_INFO|LOG_PREFIX_TIME|LOG_PREFIX_NODE));
-=======
 	LogComponentEnable("StreamingClientApplication", LOG_LEVEL_INFO);
->>>>>>> Stashed changes
 
 	/*
 	 * ========================
@@ -33,14 +28,8 @@ main (int argc, char *argv[])
 	 */
 
 	// Forced Packet Error Generate
-<<<<<<< Updated upstream
-	double errorRate = 10.0; // 0 ~ 100 %
-	errorRate = errorRate / 100;
-	bool packetLossEnable = true; // on/off
-=======
 	double errorRate = 2.0; // 0 ~ 100 % 	 default
 	bool packetLossEnable = true; // on/off, If want to loss rate 0, it must be false.
->>>>>>> Stashed changes
 
 	// Server Configuration
 	uint32_t sendFPS = 90; 
@@ -49,12 +38,8 @@ main (int argc, char *argv[])
 	uint32_t bufferSize = 40;
 	uint32_t pauseSize = 30;
 	uint32_t resumeSize = 25;
-<<<<<<< Updated upstream
-	double consumeStartTime = 1.3; // Seconds
-=======
 	double consumeStartTime = 1.0; // Seconds
 	uint32_t buffering = 15; // default
->>>>>>> Stashed changes
 
 	/*
 	 * =======================
